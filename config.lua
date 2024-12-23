@@ -8,6 +8,21 @@ Config.Target = "ox_target"
 Config.Framework = "ESX"
 Config.Inventory = "ox_inventory"
 
+
+
+Config.Duty = {
+    EnableDuty = true,
+    Zones = {
+        Duty1 = {
+            pos = vec4(-1905.6544, 2069.4551, 139.8036, 149.2030),
+            model = "a_m_m_farmer_01",
+            menuIcon = "clipboard",
+            targetIcon = "fas fa-hand"
+        }
+    }
+}
+
+
 Config.Picking = {
     Grapes1 = {
         pos = vec3(-1861.7833, 2097.8284, 139.1004),

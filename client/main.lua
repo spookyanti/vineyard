@@ -1,5 +1,6 @@
 local options = {}
 local options2 = {}
+local duty = false
 lib.locale()
 
 
@@ -16,20 +17,42 @@ CreateThread(function()
         label = locale("pickup"),
         icon = data.icon,
         onSelect = function(td)
-          if Minigame() then
-            lib.requestAnimDict(data.animation.dict)
-            TaskPlayAnim(cache.ped, data.animation.dict, data.animation.set, 1.0,-1.0, -1, 1, 1, true, true, true)
-            if ProgressBar(locale("picking"), data.animation.duration) then
-              ClearPedTasks(cache.ped)
-              for k, reward in pairs(data.rewards) do
-                addItem(reward.item, reward.amount, td)
-              end
+          if Config.Duty.EnableDuty then
+            if not duty then
+              Notify(locale("notify_title"), locale("not_on_duty"), "error", 3000)
             else
-              ClearPedTasks(cache.ped)
-              Notify(locale("notify_title"), locale("canceled_progress"), "error", 3000)
+              if Minigame() then
+                lib.requestAnimDict(data.animation.dict)
+                TaskPlayAnim(cache.ped, data.animation.dict, data.animation.set, 1.0,-1.0, -1, 1, 1, true, true, true)
+                if ProgressBar(locale("picking"), data.animation.duration) then
+                  ClearPedTasks(cache.ped)
+                  for k, reward in pairs(data.rewards) do
+                    addItem(reward.item, reward.amount, td)
+                  end
+                else
+                  ClearPedTasks(cache.ped)
+                  Notify(locale("notify_title"), locale("canceled_progress"), "error", 3000)
+                end
+              else
+                Notify(locale("notify_title"), locale("failed_pickup"), "error", 3000)
+              end
             end
           else
-            Notify(locale("notify_title"), locale("failed_pickup"), "error", 3000)
+            if Minigame() then
+              lib.requestAnimDict(data.animation.dict)
+              TaskPlayAnim(cache.ped, data.animation.dict, data.animation.set, 1.0,-1.0, -1, 1, 1, true, true, true)
+              if ProgressBar(locale("picking"), data.animation.duration) then
+                ClearPedTasks(cache.ped)
+                for k, reward in pairs(data.rewards) do
+                  addItem(reward.item, reward.amount, td)
+                end
+              else
+                ClearPedTasks(cache.ped)
+                Notify(locale("notify_title"), locale("canceled_progress"), "error", 3000)
+              end
+            else
+              Notify(locale("notify_title"), locale("failed_pickup"), "error", 3000)
+            end
           end
         end
       },
@@ -37,6 +60,64 @@ CreateThread(function()
     })
   end
 end)
+
+
+CreateThread(function()
+  for p, d in pairs(Config.Duty.Zones) do
+    lib.requestModel(d.model)
+    dutyPed = CreatePed(4, d.model, d.pos.x, d.pos.y, d.pos.z, d.pos.w, false, true)
+    SetEntityAsMissionEntity(dutyPed, true, true)
+    FreezeEntityPosition(ped, true)
+    SetEntityInvincible(ped, true)
+
+    exports.ox_target:addLocalEntity(dutyPed,{
+      label = locale("target_duty"),
+      name = "spf_vineyard:duty",
+      icon = d.targetIcon,
+      onSelect = function()
+        if Config.Duty.EnableDuty then
+          if not duty then
+            lib.registerContext({
+              id = 'spf_vineyard:dutym',
+              title = locale("duty_title"),
+              options = {
+                {
+                  title = locale("go_on_duty"),
+                  icon = d.menuIcon,
+                  onSelect = function()
+                    Notify(locale("notify_title"), locale("you_are_on_duty"), "success", 3000)
+                    duty = true
+                  end,
+                },
+              }
+            })
+            lib.showContext("spf_vineyard:dutym")
+          else
+            lib.registerContext({
+              id = 'spf_vineyard:dutyoff',
+              title = locale("duty_title"),
+              options = {
+                {
+                  title = locale("go_off_duty"),
+                  icon = d.menuIcon,
+                  onSelect = function()
+                    Notify(locale("notify_title"), locale("you_are_off_duty"), "error", 3000)
+                    duty = false
+                  end,
+                },
+              }
+            })
+            lib.showContext("spf_vineyard:dutyoff")
+          end
+        else
+          -- ked neni duty enabled
+        end
+      end
+    })
+  end
+end)
+
+
 
 function SpawnDist()
   for i, ferm in pairs(Config.Fermentation) do
@@ -102,6 +183,10 @@ function SpawnProps()
       icon = "fas fa-shoe-prints",
       name = "spf_vineyard:process",
       onSelect = function()
+        if Config.Duty.EnableDuty then
+          if not duty then
+            Notify(locale("notify_title"), locale("not_on_duty"), "error", 3000)
+          else  
         for _, grape in pairs(Config.Items) do
 
           table.insert(options, {
@@ -129,6 +214,36 @@ function SpawnProps()
       end
       lib.showContext("processmenui")
       options = {}
+          end
+        else
+        for _, grape in pairs(Config.Items) do
+
+          table.insert(options, {
+            title = grape.treadItems.label,
+            icon = "fas fa-wine-glass",
+            args = {
+                item = grape.item,
+            },
+            description = "You need "..grape.treadItems.requiredGrapes.." "..grape.label,
+            onSelect = function()
+              lib.callback('spf_vineyard:hasItem', false, function(has)
+                if has then
+                  Tread(data.modelCoords, data.animation, grape.item, grape.treadItems.requiredGrapes, grape.treadItems.item, grape.treadItems.rewardAmount)
+                else
+                  Notify(locale("notify_title"), locale("no_required_items"), "error", 4000)
+                end
+              end, grape.item, grape.treadItems.requiredGrapes)
+            end
+        }) 
+        lib.registerContext({
+          id = 'processmenui',
+          title = locale("tread_menu"),
+          options = options
+      })
+      end
+      lib.showContext("processmenui")
+      options = {}
+        end
       end
     })
   end

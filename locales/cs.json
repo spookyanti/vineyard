@@ -9,5 +9,12 @@
     "no_required_items": "You don't have required items",
     "failed_pickup": "You failed to pickup the grapes",
     "fermentation": "Fermentation",
-    "ferm_menu": "Fermentation menu"
+    "ferm_menu": "Fermentation menu",
+    "not_on_duty": "You need to go on duty",
+    "target_duty": "Toggle duty",
+    "duty_title": "Vineyard Duty",
+    "go_on_duty": "Go ON duty",
+    "go_off_duty": "Go OFF duty",
+    "you_are_on_duty": "You are ON duty now",
+    "you_are_off_duty": "You are OFF duty now"
 }
