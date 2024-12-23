@@ -1,0 +1,13 @@
+{
+    "notify_title": "Vineyard",
+    "pickup": "Pick up",
+    "picking": "Picking up...",
+    "canceled_progress": "You canceled the progress",
+    "tread_grapes": "Tread grapes",
+    "treading": "Treading grapes",
+    "tread_menu": "Tread Menu",
+    "no_required_items": "You don't have required items",
+    "failed_pickup": "You failed to pickup the grapes",
+    "fermentation": "Fermentation",
+    "ferm_menu": "Fermentation menu"
+}
